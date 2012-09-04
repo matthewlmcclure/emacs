@@ -1824,7 +1824,13 @@ When MSG is non-nil messages the first line of STRING."
         (lines (split-string string "\n" t)))
     (and msg (message "Sent: %s..." (nth 0 lines)))
     (if (> (length lines) 1)
-        (let* ((temp-file-name (make-temp-file "py"))
+
+        (let* ((temporary-file-directory
+                (if (file-remote-p default-directory)
+                    (concat (file-remote-p default-directory) "/tmp")
+                  temporary-file-directory))
+               (f (make-temp-file "py"))
+               (temp-file-name (or (file-remote-p f 'localname) f))
                (file-name (or (buffer-file-name) temp-file-name)))
           (with-temp-file temp-file-name
             (insert string)
