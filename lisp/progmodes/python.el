@@ -1829,13 +1829,17 @@ When MSG is non-nil messages the first line of STRING."
                 (if (file-remote-p default-directory)
                     (concat (file-remote-p default-directory) "/tmp")
                   temporary-file-directory))
-               (f (make-temp-file "py"))
-               (temp-file-name (or (file-remote-p f 'localname) f))
-               (file-name (or (buffer-file-name) temp-file-name)))
+               (temp-file-name (make-temp-file "py"))
+               (host-rel-temp-file-name (or (file-remote-p temp-file-name 'localname) temp-file-name))
+               (file-name (or (and
+                                (buffer-file-name)
+                                (or (file-remote-p (buffer-file-name) 'localname)
+                                    (buffer-file-name)))
+                              host-rel-temp-file-name)))
           (with-temp-file temp-file-name
             (insert string)
             (delete-trailing-whitespace))
-          (python-shell-send-file file-name process temp-file-name))
+          (python-shell-send-file file-name process host-rel-temp-file-name))
       (comint-send-string process string)
       (when (or (not (string-match "\n$" string))
                 (string-match "\n[ \t].*\n?$" string))
@@ -1938,7 +1942,12 @@ FILE-NAME."
   (let* ((process (or process (python-shell-get-or-create-process)))
          (temp-file-name (when temp-file-name
                            (expand-file-name temp-file-name)))
-         (file-name (or (expand-file-name file-name) temp-file-name)))
+         (expanded-file-name (expand-file-name file-name))
+         (file-name (or (and
+                         expanded-file-name
+                         (or (file-remote-p expanded-file-name 'localname)
+                             expanded-file-name))
+                        temp-file-name)))
     (when (not file-name)
       (error "If FILE-NAME is nil then TEMP-FILE-NAME must be non-nil"))
     (python-shell-send-string
