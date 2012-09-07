@@ -1,3 +1,11 @@
+2012-09-07  Matt McClure  <mlm@aya.yale.edu>
+
+	* progmodes/python.el (python-shell-send-string): When
+	default-directory is remote, create temp file on remote
+	filesystem.
+	(python-shell-send-file): When file is remote, pass local view of
+	file paths to remote Python interpreter.
+
 2012-09-02  Michael Albinus  <michael.albinus@gmx.de>
 
 	* eshell/em-unix.el (eshell/sudo): When we have an ad-hoc
