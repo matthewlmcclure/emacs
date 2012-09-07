@@ -1936,9 +1936,13 @@ FILE-NAME."
   (let* ((process (or process (python-shell-get-or-create-process)))
          (temp-file-name (when temp-file-name
                            (expand-file-name
-                            (or (file-remote-p temp-file-name 'localname) temp-file-name))))
-         (file-name (or (expand-file-name
-                         (or (file-remote-p file-name 'localname) file-name)) temp-file-name)))
+                            (or (file-remote-p temp-file-name 'localname)
+                                temp-file-name))))
+         (file-name (or (when file-name
+                          (expand-file-name
+                           (or (file-remote-p file-name 'localname)
+                               file-name)))
+                        temp-file-name)))
     (when (not file-name)
       (error "If FILE-NAME is nil then TEMP-FILE-NAME must be non-nil"))
     (python-shell-send-string
